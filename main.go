@@ -1,21 +1,43 @@
 package main
 
 import (
-	"fmt"
 	"log"
-	"net/http"
+	// "github.com/charmbracelet/bubbles/textinput"
+	tea "github.com/charmbracelet/bubbletea"
 )
 
-func main() {
-	http.HandleFunc("/", homeHandler)
-	port := "8080"
-	fmt.Println("Server running on http://localhost:" + port)
-	err := http.ListenAndServe(":"+port, nil)
-	if err != nil {
-		log.Fatalf("Server failed: %v", err)
+type model struct {
+	payload string
+}
+
+func newModel() model {
+	return model{
+		payload: "DEFAULT VALUE",
 	}
 }
 
-func homeHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "Welcome to the Language Practice API")
+func (m model) Init() tea.Cmd {
+	return nil
+}
+
+func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	if val, ok := msg.(tea.KeyMsg); ok {
+		key := val.String()
+		if key == "ctrl+c" {
+			return m, tea.Quit
+		}
+		m.payload = key
+	}
+	return m, nil
+}
+
+func (m model) View() string {
+	return m.payload
+}
+
+func main() {
+	p := tea.NewProgram(newModel())
+	if _, err := p.Run(); err != nil {
+		log.Fatal(err)
+	}
 }
